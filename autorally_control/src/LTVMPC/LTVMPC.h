@@ -12,10 +12,10 @@
 #include <autorally_msgs/chassisCommand.h>
 #include <autorally_msgs/wheelSpeeds.h>
 #include <autorally_msgs/runstop.h>
-#include <autorally_private_msgs/mapCA.h>
+#include <autorally_msgs/mapCA.h>
 
 
-#include <autorally_private_control/LTVMPC_paramsConfig.h> //point to cfg file, catkin will generate the header 
+#include <autorally_control/LTVMPC_paramsConfig.h> //point to cfg file, catkin will generate the header 
 
 #include <boost/thread.hpp>          // Mutex
 #include <boost/lexical_cast.hpp>

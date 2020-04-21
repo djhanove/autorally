@@ -15,16 +15,15 @@
 #include <autorally_msgs/chassisCommand.h>
 // #include <autorally_msgs/wheelSpeeds.h>
 #include <autorally_msgs/runstop.h>
-#include <autorally_private_msgs/mapCA.h>
+#include <autorally_msgs/mapCA.h>
 
-#include <autorally_private_control/LTIMPC_paramsConfig.h> //point to cfg file, catkin will generate the header 
+#include <autorally_control/LTIMPC_paramsConfig.h> //point to cfg file, catkin will generate the header 
 
 #include <boost/thread.hpp>          // Mutex
 #include <boost/lexical_cast.hpp>
 
 // #include "../PID_CA/map.h" 
-#include <VehicleDynamics/vehicle_dynamics.h>
-
+#include <VehicleDynamics/VehDyn.h>
 
 #define _USE_MATH_DEFINES
 namespace autorally_control
