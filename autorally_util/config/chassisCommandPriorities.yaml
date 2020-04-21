@@ -1,6 +1,13 @@
-'mppi_controller': 1
-'constantSpeedController': 2
-'waypointFollower': 3
-'joystick': 4
-'OCS': 5
+'mppi_controller': 10
+'PID_CA': 1
+'LTIMPC': 2
+'LTVMPC': 3 
+'TubeLTVMPC': 4
+'TubeMPC': 11
+'constantSpeedController': 9
+'waypointFollower': 8
+'joystick': 5
+'OCS': 6
 'RC': 7
+'LMPC': 12
+
