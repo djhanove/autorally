@@ -22,7 +22,9 @@ set(BUILD_FLAGS "-std=c++11 -Wuninitialized")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BUILD_FLAGS}")
 
 generate_dynamic_reconfigure_options(cfg/gpsWaypoint_params.cfg
-				     cfg/PathIntegralParams.cfg)
+				     cfg/PathIntegralParams.cfg
+                                     cfg/LTIMPC_params.cfg
+                                     cfg/LTVMPC_params.cfg)
 
 catkin_package(
   DEPENDS Boost
@@ -39,6 +41,8 @@ add_subdirectory(src/ConstantSpeedController)
 add_subdirectory(src/joystick)
 add_subdirectory(src/gpsWaypoint)
 add_subdirectory(src/path_integral)
+add_subdirectory(src/LTIMPC)
+#add_subdirectory(src/LTVMPC)
 
 install(DIRECTORY launch/
    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
