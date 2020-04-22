@@ -109,8 +109,8 @@ void LTIMPC::setMPCCost()
 
   m_lock.lock();
 
-  m_Q = Eigen::MatrixXd::Zero(Vehicle.m_nx, Vehicle.m_nx);
-  m_R = Eigen::MatrixXd::Zero(Vehicle.m_nu, Vehicle.m_nu);
+  m_Q = Eigen::MatrixXd::Zero(8, 8);
+  m_R = Eigen::MatrixXd::Zero(2, 2);
   
   m_lock.unlock();
 }
@@ -155,8 +155,8 @@ Eigen::Matrix<double, 8, 1> LTIMPC::computeState()
   state(0, 0) = m_vx;
   state(1, 0) = m_vy;
   state(2, 0) = m_wz;
-  state(3, 0) = m_frontWheelsSpeed / Vehicle.m_Vehicle_rF;
-  state(4, 0) = m_rearWheelsSpeed / Vehicle.m_Vehicle_rR;
+  state(3, 0) = m_frontWheelsSpeed / Vehicle.getFrontWheelRadius();
+  state(4, 0) = m_rearWheelsSpeed / Vehicle.getRearWheelRadius();
   state(5, 0) = m_epsi;
   state(6, 0) = m_n;
   state(7, 0) = m_s;
@@ -197,14 +197,14 @@ void LTIMPC::LTIMPCcb()
   params.target[0] = m_speedCommand; //Vx
   params.target[1] = 0.0; //  Vy - Targeting Vy = 0 seems like it may adversely impact controller performance pending mu characteristics
   params.target[2] = 0.0; //  Yaw Angle
-  params.target[3] = m_speedCommand / Vehicle.m_Vehicle_rF; //  Front wheel speeds
-  params.target[4] = m_speedCommand / Vehicle.m_Vehicle_rR; //  Rear wheel speeds
+  params.target[3] = m_speedCommand / Vehicle.getFrontWheelRadius(); //  Front wheel speeds
+  params.target[4] = m_speedCommand / Vehicle.getRearWheelRadius(); //  Rear wheel speeds
   params.target[5] = 0.0; //  heading deviation 
   params.target[6] = 0.0; //  lateral deviation 
   params.target[7] = 0.0; //
 
   //  Populate parameter arrays for CVXGEN solver
-  for (int i = 0; i < Vehicle.m_nx * Vehicle.m_nx; i++)
+  for (int i = 0; i < 8 * 8; i++)
   {
     if (i < 4)
     {
@@ -263,7 +263,7 @@ void LTIMPC::LTIMPCcb()
   //command.throttle = 0.25;
 }
 
-void LTIMPC::Solve(autorally_private_msgs::mapCA CA_states)
+void LTIMPC::Solve(autorally_msgs::mapCA CA_states)
 {
   /* Acts as a run function. Pulls everything together and publishes the control command to the platform */
   m_s = CA_states.s;

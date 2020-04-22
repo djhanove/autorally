@@ -23,7 +23,7 @@
 #include <boost/lexical_cast.hpp>
 
 // #include "../PID_CA/map.h" 
-#include <VehicleDynamics/VehDyn.h>
+#include "VehDyn.h"
 
 #define _USE_MATH_DEFINES
 namespace autorally_control
@@ -94,7 +94,7 @@ class LTIMPC
 
 
         // Map map_instance;
-        VehicleDynamics Vehicle;
+        VehDyn Vehicle;
         
         void LTIMPCcb();
         Eigen::Matrix<double, 8, 1> computeState();
@@ -102,7 +102,7 @@ class LTIMPC
         void setMPCCost();
         // void WheelSpeedcb(autorally_msgs::wheelSpeeds speeds);// obtain front/rear wheel speeds 
         // void Gpscb(nav_msgs::Odometry position); // obtain s, n, and e_psi info from GPS signal
-        void Solve(autorally_private_msgs::mapCA CA_states); // Solve the problem and return control command to ROS
+        void Solve(autorally_msgs::mapCA CA_states); // Solve the problem and return control command to ROS
         void ConfigCallback(const LTIMPC_paramsConfig &config, uint32_t level);
         void ViewMPCTrajectory(float state_est_x, float state_est_y, float state_est_yaw);
 
