@@ -35,8 +35,9 @@ LTIMPC::LTIMPC() : nh("~")
   setup_indexing();     //Init structs for solver states from solve.c
   settings.verbose = 0; // Set this to 1 if you want to see the internal solver information
 
-  /* Initialize Q and R matrices to Zero */
+  /* Initialize Q and R matrices to Zero and get pointers to the eigen matrices */
   setMPCCost();
+  getPointerstoEigen();
 
   /* Setup dynamic reconfigure pipeline and tie to callback function */
   cb = boost::bind(&LTIMPC::ConfigCallback, this, _1, _2);
@@ -52,6 +53,17 @@ void LTIMPC::setMPCCost()
   m_Q = Eigen::MatrixXd::Zero(8, 8);
   m_R = Eigen::MatrixXd::Zero(2, 2);
   m_lock.unlock();
+}
+
+void LTIMPC::getPointerstoEigen() 
+{
+  // Unpack Eigen matrices into flat C arrays for CVXGEN solver
+  x_out_ptr = x0.data(); 
+  A_ptr = Vehicle.m_A.data();
+  B_ptr = Vehicle.m_B.data();
+  d_ptr = Vehicle.m_d.data();
+  Q_ptr = m_Q.data();
+  R_ptr = m_R.data();
 }
 
 void LTIMPC::ConfigCallback(const LTIMPC_paramsConfig &config, uint32_t level)
@@ -87,14 +99,6 @@ void LTIMPC::LTIMPCcb()
     A, B, and d are ready.
     x_{k+1} = Ax_k + Bu_k + d
   */
-
-  // Unpack Eigen matrices into flat C arrays for CVXGEN solver
-  double *x_out_ptr = x0.data(); 
-  double *A_ptr = Vehicle.m_A.data();
-  double *B_ptr = Vehicle.m_B.data();
-  double *d_ptr = Vehicle.m_d.data();
-  double *Q_ptr = m_Q.data();
-  double *R_ptr = m_R.data();
 
   // Set State Targets
   params.target[0] = speedCommand; //Vx target
