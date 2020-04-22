@@ -13,6 +13,7 @@ Eigen::Matrix<double, 8, 1> VehDyn::RWDBicycleModel(const Eigen::Matrix<double, 
 
     double delta = unnormalizeSteering(control(0, 0)); // Road wheel angle (rad)
     double T = unnormalizeThrottle(control(1, 0)); // Wheel Torque
+
     double velX = state(0, 0); // x (longitudinal) velocity (m/s) at CG
     double velY = state(1, 0); // y (lateral) velocity (m/s) at CG
     double omegaZ = state(2, 0); // yaw rate, omega z, (rad/s) at CG
@@ -62,10 +63,11 @@ Eigen::Matrix<double, 8, 1> VehDyn::RWDBicycleModel(const Eigen::Matrix<double, 
         velX += deltaT * ((fFx * cos(delta) - fFy * sin(delta) + fRx) / Vehicle_m + velY * omegaZ);
         velY += deltaT * ((fFx * sin(delta) + fFy * cos(delta) + fRy) / Vehicle_m - velX * omegaZ);
         omegaZ += deltaT * ((fFy * cos(delta) + fFx * sin(delta)) * Vehicle_lF - fRy * Vehicle_lR)
-             / Vehicle_Iz;
+            / Vehicle_Iz;
         omegaFront -= deltaT * Vehicle_rF / Vehicle_IwF * fFx;
         omegaRear += deltaT / Vehicle_IwR * (T - Vehicle_rR * fRx);
-        errorPsi += deltaT * (omegaZ - (velX * cos(errorPsi) - velY * sin(errorPsi)) / (1 - curvature * errorY) * curvature);
+        errorPsi += deltaT * (omegaZ - (velX * cos(errorPsi) - velY * sin(errorPsi))
+            / (1 - curvature * errorY) * curvature);
         errorY += deltaT * (velX * sin(errorPsi) + velY * cos(errorPsi));
         distTraveled += deltaT * (velX * cos(errorPsi) - velY * sin(errorPsi)) / (1 - curvature * errorY);
     }
@@ -114,7 +116,7 @@ double VehDyn::calcSlipRatio(double const &velLong, double const &omega)
     /* Finds the slip ratio for a given wheel. Protects for the case when angular velocity is zero
        Formula referenced from TU Delft's magic formula 6.2
     */
-    return (omega > 0.0) ? (velLong - omega * Vehicle_rF) / (omega * Vehicle_rF) : 0.0;
+    return (omega > 0.0) ? ((velLong - omega * Vehicle_rF) / (omega * Vehicle_rF)) : 0.0;
 }
 
 double VehDyn::calcSlipAngle(double const &velLong, double const &velLat, double const &slipRatio)
@@ -130,29 +132,27 @@ void VehDyn::LinearizeDynamics(const Eigen::Matrix<double, 8, 1> &state, const E
     double perturb = 0.000001; // arbitrary perturbation across all state and control values
     Eigen::Matrix<double, 8, 1> xplus, xminus, fplus, fminus;
     Eigen::Matrix<double, 2, 1> uplus, uminus;
-    // copy values from state and control over
-    xplus = state;
-    xminus = state;
-    uplus = control;
-    uplus = control;
 
     // Perturb state variables on both sides and find localized linear model for State Matrix A
     for(int i = 0; i < 8; ++i){
-      xplus(i) += perturb;
-      xminus(i) -= perturb;
-      fplus = RWDBicycleModel(xplus, control, curvature);
-      fminus = RWDBicycleModel(xminus, control, curvature);
-      m_A.block(0, i, 8, 1) = 0.5 / perturb * ( fplus - fminus );
+        xplus = state;
+        xplus(i) += perturb;
+        xminus = state;
+        xminus(i) -= perturb;
+        fplus = RWDBicycleModel(xplus, control, curvature);
+        fminus = RWDBicycleModel(xminus, control, curvature);
+        m_A.block(0, i, 8, 1) = 0.5 / perturb * ( fplus - fminus );
     }
 
     // Perturb control variables on both sides and find localized linear model for Control Matrix B
     for(int i = 0; i < 2; ++i){
-      uplus(i) += perturb;
-      uminus(i) -= perturb;
-      fplus = RWDBicycleModel(state, uplus, curvature);
-      fminus = RWDBicycleModel(state, uminus, curvature);
-      m_B.block(0, i, 8, 1) = 0.5 / perturb * ( fplus - fminus );
-
+        uplus = control;
+        uplus(i) += perturb;
+        uminus = control;
+        uminus(i) -= perturb;
+        fplus = RWDBicycleModel(state, uplus, curvature);
+        fminus = RWDBicycleModel(state, uminus, curvature);
+        m_B.block(0, i, 8, 1) = 0.5 / perturb * ( fplus - fminus );
     }
     // calculate disturbance matrix, d, using the newly linearized state and control matrices
     m_d = RWDBicycleModel(state, control, curvature) - m_A * state - m_B * control;

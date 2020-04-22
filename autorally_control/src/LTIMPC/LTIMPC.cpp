@@ -17,40 +17,40 @@ Settings settings; //struct for MPC solver settings
 
 namespace autorally_control
 {
-LTIMPC::LTIMPC() : m_nh("~")
+LTIMPC::LTIMPC() : nh("~")
 {
-  m_mapCASub = m_nh.subscribe("/MAP_CA/mapCA", 1, &LTIMPC::Solve, this);
-  m_chassisCommandPub = m_nh.advertise<autorally_msgs::chassisCommand>("chassisCommand", 1);
-  m_runstopPub = m_nh.advertise<autorally_msgs::runstop>("runstop", 10);
-  m_trajectoryPub = m_nh.advertise<visualization_msgs::MarkerArray>( "MPC_Trajectory", 1 );
+  /* Setup Pub/Subs */
+  mapCASub = nh.subscribe("/MAP_CA/mapCA", 1, &LTIMPC::Solve, this);
+  chassisCommandPub = nh.advertise<autorally_msgs::chassisCommand>("chassisCommand", 1);
+  runstopPub = nh.advertise<autorally_msgs::runstop>("runstop", 10);
+  trajectoryPub = nh.advertise<visualization_msgs::MarkerArray>( "MPC_Trajectory", 1 );
+  
+  /* Init first control command to zero */
   command.steering = 0.0; // first loop needs this initialized
   command.throttle = 0.0; // first loop needs this initialized
+  controllerUpdateRate = 0.01; // Try to achieve 100 Hz update rate
 
+  /* Setup external CVXGEN solver parameters */
   set_defaults();       //setup MPC Solver defaults from solve.c
   setup_indexing();     //Init structs for solver states from solve.c
   settings.verbose = 0; // Set this to 1 if you want to see the internal solver information
 
-
+  /* Initialize Q and R matrices to Zero */
   setMPCCost();
 
+  /* Setup dynamic reconfigure pipeline and tie to callback function */
   cb = boost::bind(&LTIMPC::ConfigCallback, this, _1, _2);
   m_dynServer.setCallback(cb);
   ros::Duration d = ros::Duration(1.0);
-  d.sleep();
+  d.sleep(); // Wait 1 second for pub/sub and dynamic reconfigure connections to be established
 }
-
-LTIMPC::~LTIMPC() {}
 
 void LTIMPC::setMPCCost()
 {
-
   /* Init Eigen matrices for Q cost and R control cost */
-
   m_lock.lock();
-
   m_Q = Eigen::MatrixXd::Zero(8, 8);
   m_R = Eigen::MatrixXd::Zero(2, 2);
-  
   m_lock.unlock();
 }
 
@@ -64,7 +64,6 @@ void LTIMPC::ConfigCallback(const LTIMPC_paramsConfig &config, uint32_t level)
 
   speedCommand = config.speed;
   std::cout << "Target Speed Updated" << std::endl;
-
   m_Q(0, 0) = config.Q_vx;   //vx
   m_Q(1, 1) = config.Q_vy;   // vy
   m_Q(2, 2) = config.Q_wz;   //  wz
@@ -82,14 +81,14 @@ void LTIMPC::ConfigCallback(const LTIMPC_paramsConfig &config, uint32_t level)
 
 void LTIMPC::LTIMPCcb()
 {
-
   Vehicle.LinearizeDynamics(x0, control, curvature); 
-  //  LTI linearizes around current state, LTV takes previous history of states and then linearizes
-  //  At this point, system dynamics matrices
-  //  m_A, m_B, and m_d are ready.
-  //  x_{k+1} = Ax_k + Bu_k + d
+  /*
+    At this point, the system dynamics matrices
+    A, B, and d are ready.
+    x_{k+1} = Ax_k + Bu_k + d
+  */
 
-  //Unpack Eigen matrices into flat C arrays for CVXGEN solver
+  // Unpack Eigen matrices into flat C arrays for CVXGEN solver
   double *x_out_ptr = x0.data(); 
   double *A_ptr = Vehicle.m_A.data();
   double *B_ptr = Vehicle.m_B.data();
@@ -97,14 +96,19 @@ void LTIMPC::LTIMPCcb()
   double *Q_ptr = m_Q.data();
   double *R_ptr = m_R.data();
 
-  params.target[0] = speedCommand; //Vx
-  params.target[1] = 0.0; //  Vy - Targeting Vy = 0 seems like it may adversely impact controller performance pending mu characteristics
-  params.target[2] = 0.0; //  Yaw Angle
-  params.target[3] = speedCommand / Vehicle.getFrontWheelRadius(); //  Front wheel speeds
-  params.target[4] = speedCommand / Vehicle.getRearWheelRadius(); //  Rear wheel speeds
-  params.target[5] = 0.0; //  heading deviation 
-  params.target[6] = 0.0; //  lateral deviation 
-  params.target[7] = 0.0; //
+  // Set State Targets
+  params.target[0] = speedCommand; //Vx target
+  params.target[1] = 0.0; //Vy target
+  params.target[2] = speedCommand * curvature; //  Yaw rate target
+  params.target[3] = speedCommand / Vehicle.getFrontWheelRadius(); //  Front wheel speed target
+  params.target[4] = speedCommand / Vehicle.getRearWheelRadius(); //  Rear wheel speeds target
+  params.target[5] = 0.0; //  heading deviation target
+  params.target[6] = 0.0; //  lateral deviation target
+  params.target[7] = 0.0; //  dist traveled target (cost is set to zero)
+
+  //  Set actuator limits for steer and brake commands (normalized, abs value constraint)
+  params.umax[0] = 0.99;
+  params.umax[1] = 0.99;
 
   //  Populate parameter arrays for CVXGEN solver
   for (int i = 0; i < 8 * 8; i++)
@@ -142,50 +146,45 @@ void LTIMPC::LTIMPCcb()
       params.QT[i] = 0.0;
     }
   }
-  //  Set actuator limits for steer and brake commands (normalized)
-  params.umax[0] = 1.00;
-  params.umax[1] = 1.00;
 
   solve(); 
-
   command.steering = *vars.u[0];       //   get steering command from MPC outputs
   command.throttle = *(vars.u[0] + 1); //   get throttle command from MPC outputs
-
 }
 
 void LTIMPC::Solve(const autorally_msgs::mapCA &CA_states)
 {
-  
-  /* Populate Initial State Vector for t_0 */
-  x0(0, 0) = CA_states.vx;
-  x0(1, 0) = CA_states.vy;
-  x0(2, 0) = CA_states.wz;
-  x0(3, 0) = CA_states.wf / Vehicle.getFrontWheelRadius();
-  x0(4, 0) = CA_states.wr / Vehicle.getRearWheelRadius();
-  x0(5, 0) = CA_states.epsi;
-  x0(6, 0) = CA_states.ey;
-  x0(7, 0) = CA_states.ey;
-
-  /* Populate input matrix with control command from previous time step */
-  control(0, 0) = command.steering;
-  control(1, 0) = command.throttle;   
-
-  curvature = CA_states.curvature;
   time = ros::Time::now().toSec();
-  dt = time - m_prevTime;
-  if (dt > .01)
+  dt = time - prevTime;
+  if (dt > controllerUpdateRate)
   {
-    // Gpscb(position);
+    /* Populate Initial State Vector for t_0 */
+    x0(0, 0) = CA_states.vx;
+    x0(1, 0) = CA_states.vy;
+    x0(2, 0) = CA_states.wz;
+    x0(3, 0) = CA_states.wf / Vehicle.getFrontWheelRadius();
+    x0(4, 0) = CA_states.wr / Vehicle.getRearWheelRadius();
+    x0(5, 0) = CA_states.epsi;
+    x0(6, 0) = CA_states.ey;
+    x0(7, 0) = CA_states.ey;
+
+    /* Populate input matrix with control command from previous time step */
+    control(0, 0) = command.steering;
+    control(1, 0) = command.throttle;   
+
+    curvature = CA_states.curvature;
+
     LTIMPCcb();
     command.header.stamp = ros::Time::now();
     command.sender = "LTIMPC";
     command.frontBrake = 0.0;
-    m_chassisCommandPub.publish(command);
-    m_prevTime = time;
+    chassisCommandPub.publish(command);
+    prevTime = time;
   }
 }
 
 /*
+Still need to figure out proper transforms back to world frame for visualization of MPC predictions
 void LTIMPC::ViewMPCTrajectory(float state_est_x, float state_est_y, float state_est_yaw)
 {
 
