@@ -23,11 +23,11 @@ LTIMPC::LTIMPC() : nh("~")
   mapCASub = nh.subscribe("/MAP_CA/mapCA", 1, &LTIMPC::Solve, this);
   chassisCommandPub = nh.advertise<autorally_msgs::chassisCommand>("chassisCommand", 1);
   runstopPub = nh.advertise<autorally_msgs::runstop>("runstop", 10);
-  trajectoryPub = nh.advertise<visualization_msgs::MarkerArray>( "MPC_Trajectory", 1 );
-  
+  trajectoryPub = nh.advertise<visualization_msgs::MarkerArray>("MPC_Trajectory", 1);
+
   /* Init first control command to zero */
-  command.steering = 0.0; // first loop needs this initialized
-  command.throttle = 0.0; // first loop needs this initialized
+  command.steering = 0.0;      // first loop needs this initialized
+  command.throttle = 0.0;      // first loop needs this initialized
   controllerUpdateRate = 0.01; // Try to achieve 100 Hz update rate
 
   /* Setup external CVXGEN solver parameters */
@@ -55,10 +55,10 @@ void LTIMPC::setMPCCost()
   m_lock.unlock();
 }
 
-void LTIMPC::getPointerstoEigen() 
+void LTIMPC::getPointerstoEigen()
 {
   // Unpack Eigen matrices into flat C arrays for CVXGEN solver
-  x_out_ptr = x0.data(); 
+  x_out_ptr = x0.data();
   A_ptr = Vehicle.m_A.data();
   B_ptr = Vehicle.m_B.data();
   d_ptr = Vehicle.m_d.data();
@@ -90,10 +90,9 @@ void LTIMPC::ConfigCallback(const LTIMPC_paramsConfig &config, uint32_t level)
   params.half_road_width[0] = config.Track_Width / 2.0;
 }
 
-
 void LTIMPC::LTIMPCcb()
 {
-  Vehicle.LinearizeDynamics(x0, control, curvature); 
+  Vehicle.LinearizeDynamics(x0, control, curvature);
   /*
     At this point, the system dynamics matrices
     A, B, and d are ready.
@@ -101,14 +100,14 @@ void LTIMPC::LTIMPCcb()
   */
 
   // Set State Targets
-  params.target[0] = speedCommand; //Vx target
-  params.target[1] = 0.0; //Vy target
-  params.target[2] = speedCommand * curvature; //  Yaw rate target
+  params.target[0] = speedCommand;                                 //Vx target
+  params.target[1] = 0.0;                                          //Vy target
+  params.target[2] = speedCommand * curvature;                     //  Yaw rate target
   params.target[3] = speedCommand / Vehicle.getFrontWheelRadius(); //  Front wheel speed target
-  params.target[4] = speedCommand / Vehicle.getRearWheelRadius(); //  Rear wheel speeds target
-  params.target[5] = 0.0; //  heading deviation target
-  params.target[6] = 0.0; //  lateral deviation target
-  params.target[7] = 0.0; //  dist traveled target (cost is set to zero)
+  params.target[4] = speedCommand / Vehicle.getRearWheelRadius();  //  Rear wheel speeds target
+  params.target[5] = 0.0;                                          //  heading deviation target
+  params.target[6] = 0.0;                                          //  lateral deviation target
+  params.target[7] = 0.0;                                          //  dist traveled target (cost is set to zero)
 
   //  Set actuator limits for steer and brake commands (normalized, abs value constraint)
   params.umax[0] = 0.99;
@@ -151,7 +150,7 @@ void LTIMPC::LTIMPCcb()
     }
   }
 
-  solve(); 
+  solve();
   command.steering = *vars.u[0];       //   get steering command from MPC outputs
   command.throttle = *(vars.u[0] + 1); //   get throttle command from MPC outputs
 }
@@ -170,11 +169,11 @@ void LTIMPC::Solve(const autorally_msgs::mapCA &CA_states)
     x0(4, 0) = CA_states.wr / Vehicle.getRearWheelRadius();
     x0(5, 0) = CA_states.epsi;
     x0(6, 0) = CA_states.ey;
-    x0(7, 0) = CA_states.ey;
+    x0(7, 0) = CA_states.s;
 
     /* Populate input matrix with control command from previous time step */
     control(0, 0) = command.steering;
-    control(1, 0) = command.throttle;   
+    control(1, 0) = command.throttle;
 
     curvature = CA_states.curvature;
 
@@ -236,7 +235,6 @@ void LTIMPC::ViewMPCTrajectory(float state_est_x, float state_est_y, float state
 
 }
 */
-
 
 }; // namespace autorally_control
 

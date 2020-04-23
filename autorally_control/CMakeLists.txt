@@ -18,8 +18,10 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Boost 1.49.0 REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-set(BUILD_FLAGS "-std=c++11 -Wuninitialized")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BUILD_FLAGS}")
+#set(BUILD_FLAGS "-std=c++11 -Wuninitialized")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BUILD_FLAGS}")
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17 -pthread -Wuninitialized")
+
 
 generate_dynamic_reconfigure_options(cfg/gpsWaypoint_params.cfg
 				     cfg/PathIntegralParams.cfg
@@ -42,7 +44,7 @@ add_subdirectory(src/joystick)
 add_subdirectory(src/gpsWaypoint)
 add_subdirectory(src/path_integral)
 add_subdirectory(src/LTIMPC)
-#add_subdirectory(src/LTVMPC)
+add_subdirectory(src/LTVMPC)
 
 install(DIRECTORY launch/
    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch

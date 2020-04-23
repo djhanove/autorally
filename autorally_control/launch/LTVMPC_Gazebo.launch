@@ -4,6 +4,6 @@
     <param name="MAP_CA/map_flag" value="0"/>
     <param name="MAP_CA/use_pose_estimate" value="false"/>
    </node>
-  <node name="LTVMPC" pkg="autorally_private_control" 
+  <node name="LTVMPC" pkg="autorally_control" 
   type="LTVMPC" output="screen"/>
 </launch>
