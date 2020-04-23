@@ -18,31 +18,32 @@ Settings settings; //struct for MPC solver settings
 
 namespace autorally_control
 {
-LTVMPC::LTVMPC() : nh("~"), m_speed(0.0)
+LTVMPC::LTVMPC() : nh("~")
 {
+  /* Setup Pub/Subs */
   mapCASub = nh.subscribe("/MAP_CA/mapCA", 1, &LTVMPC::Solve, this);
   chassisCommandPub = nh.advertise<autorally_msgs::chassisCommand>("chassisCommand", 1);
   runstopPub = nh.advertise<autorally_msgs::runstop>("runstop", 10);
-  command.steering = 0.0; // first loop needs this initialized
-  command.throttle = 0.0; // first loop needs this initialized
 
-  util = Utilities(1);
-  for (int k = 0; k <= m_N; ++k)
-  {
-    for (int i = 0; i < 8; ++i)
-    {
-      m_linPoints[k][i] = -1000.0; // ToDo: More sophisticated initialization.
-    }
-  }
+  /* Init first control command to zero */
+  command.steering = 0.0;      // first loop needs this initialized
+  command.throttle = 0.0;      // first loop needs this initialized
+  controllerUpdateRate = 0.01; // Try to achieve 100 Hz update rate
 
+  // setup instance of map utility with gazebo simulation parameters
+  util = Utilities(0);
+
+  /* Setup external CVXGEN solver parameters */
   set_defaults();       //setup MPC Solver defaults from solve.c
   setup_indexing();     //Init structs for solver states from solve.c
   settings.verbose = 0; // Set this to 1 if you want to see the internal solver information
 
-  dynamic_reconfigure::Server<LTVMPC_paramsConfig>::CallbackType cb; // Start up dynamic reconfigure server
-
+  /* Initialize Q and R matrices to Zero and get pointers to the eigen matrices */
   setMPCCost();
+  getPointerstoEigen();
 
+  /* Setup dynamic reconfigure pipeline and tie to callback function */
+  dynamic_reconfigure::Server<LTVMPC_paramsConfig>::CallbackType cb; // Start up dynamic reconfigure server
   cb = boost::bind(&LTVMPC::ConfigCallback, this, _1, _2);
   m_dynServer.setCallback(cb);
   ros::Duration d = ros::Duration(1.0);
@@ -56,14 +57,21 @@ void LTVMPC::setMPCCost()
 
   m_Q = Eigen::MatrixXd::Zero(m_nX, m_nX);
   m_R = Eigen::MatrixXd::Zero(m_nU, m_nU);
+  m_linPoints = Eigen::MatrixXd::Zero(m_N + 1, m_nX);
 
   m_lock.unlock();
 }
 
+void LTVMPC::getPointerstoEigen()
+{
+  x_out_ptr = x0.data();
+  Q_ptr = m_Q.data();
+  R_ptr = m_R.data();
+}
 void LTVMPC::ConfigCallback(const LTVMPC_paramsConfig &config, uint32_t level)
 {
-  /* Initialize Q and R cost matrix diagonals with custom parameters defined in the LTI_params.cfg file 
-       (autorally_control/cfg/LTI_MPC_params.cfg)
+  /* Initialize Q and R cost matrix diagonals with custom parameters defined in the LTV_params.cfg file 
+       (autorally_control/cfg/LTV_MPC_params.cfg)
     */
 
   speedCommand = config.speed;
@@ -83,19 +91,19 @@ void LTVMPC::ConfigCallback(const LTVMPC_paramsConfig &config, uint32_t level)
 
 void LTVMPC::LTVMPCcb()
 {
-  auto start = std::chrono::high_resolution_clock::now();
+  //auto start = std::chrono::high_resolution_clock::now();
 
   for (int i = 0; i < 8; ++i)
   {
-    m_linPoints[0][i] = x0(i, 0); // Update the first linPoints to the current state/
+    m_linPoints(0, i) = x0(i, 0); // Update the first linPoints to the current state/
   }
-  if (x0(0, 0) <= 0.5 || m_linPoints[1][0] == -1000.0 || std::isnan(command.steering))
+  if (x0(0, 0) <= 0.5 || std::isnan(command.steering))
   { // We use LTI.
     for (int k = 1; k <= m_N; ++k)
     {
       for (int i = 0; i < 8; ++i)
       {
-        m_linPoints[k][i] = x0(i, 0); // Update the linPoints to the current state/
+        m_linPoints(k, i) = x0(i, 0); // Update the linPoints to the current state/
       }
     }
   }
@@ -105,9 +113,6 @@ void LTVMPC::LTVMPCcb()
   {
     futures.emplace_back(std::async(std::launch::async, &LTVMPC::multiThreadTest, this, k));
   }
-  double *x_out_ptr = x0.data();
-  double *Q_ptr = m_Q.data();
-  double *R_ptr = m_R.data();
 
   //  Populate parameter arrays for CVXGEN solver
   for (int i = 0; i < m_nX * m_nX; i++)
@@ -160,16 +165,18 @@ void LTVMPC::LTVMPCcb()
   {
     for (int i = 0; i < 8; ++i)
     {
-      m_linPoints[k][i] = *(vars.x[k + 1] + i);
+      m_linPoints(k, i) = *(vars.x[k + 1] + i);
     }
   }
   for (int i = 0; i < 8; ++i)
   {
-    m_linPoints[m_N][i] = m_linPoints[m_N - 1][i];
+    m_linPoints(m_N, i) = m_linPoints(m_N - 1, i);
   }
+  /*
   auto finish = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> dur = finish - start;
   std::cout << "CB loop execution time (ms): " << dur.count() << std::endl;
+  */
 }
 
 void LTVMPC::populateParameterArrays(double (&A)[64], double (&B)[16], double (&d)[8],
@@ -203,7 +210,6 @@ void LTVMPC::populateParameterArrays(double (&A)[64], double (&B)[16], double (&
 
 void LTVMPC::Solve(autorally_msgs::mapCA CA_states)
 {
-  /* Acts as a run function. Pulls everything together and publishes the control command to the platform */
   time = ros::Time::now().toSec();
   dt = time - prevTime;
   if (dt > controllerUpdateRate)
@@ -238,7 +244,7 @@ void LTVMPC::multiThreadTest(int k)
   Eigen::Matrix<double, 8, 1> linP;
   for (int i = 0; i < 8; ++i)
   {
-    linP(i, 0) = m_linPoints[k][i]; // shouldnt need a mutex here since I'm just reading.
+    linP(i, 0) = m_linPoints(k, i); // shouldnt need a mutex here since I'm just reading.
   }
   //std::cout << util.obtainCurvatureFromS(linP(7, 0)) <<  ", ";
 
