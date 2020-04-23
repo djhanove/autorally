@@ -166,6 +166,36 @@ Configure a publisher on topic `constantSpeedController/speedCommand` of type `s
 
 If the robot turns and hits the barrier it's probably because the state estimator has not converged, so its orientation estimate is incorrect. Just select the track barriers and move them up to allow the robot to continue driving, and the estimator should converge and the vehicle will return to within the barriers.
 
+## Udacity Capstone Contribution
+I have implemented 2 different forms of Model Predictive Controllers for the AutoRally platform, as well as a nonlinear dynamics model  based off of the bicycle model and the Pacjecka Magic Formula tire model. Code for these controllers can be found [here](https://github.com/djhanove/autorally/tree/melodic-devel/autorally_control/src) in the the LTIMPC and LTVMPC folders. Please see the following files:
+* [VehDyn.h/cpp](https://github.com/djhanove/autorally/blob/melodic-devel/autorally_control/src/LTVMPC/VehDyn.cpp) - Implementation of the Bicycle Model and Pacjecka Tire Model. Utilizes OOP, Loops and Control Logic, and Pass by Reference
+
+
+* [LTIMPC.h/cpp](https://github.com/djhanove/autorally/blob/melodic-devel/autorally_control/src/LTIMPC/LTIMPC.cpp) - Implementation of a Linear-Time-Invariant Model Predictive Controller. Demonstrates usage of OOP, Mutexes, Concurrency, Loops, Pass by Reference, and Pointer Unpacking
+
+* [LTVMPC.h/cpp](https://github.com/djhanove/autorally/blob/melodic-devel/autorally_control/src/LTVMPC/LTVMPC.cpp) - Implementation of a Linear-Time-Varying Model Predictive Controller. Demonstrates usage of OOP, Mutexes, Asynchronous Tasks, Loops, Pass by Reference, Pointer Unpacking.
+
+To launch one of these controllers, please follow the following instructions:
+1. Open a new terminal and issue the following command after sourcing your workspace
+
+```roslaunch autorally_gazebo autoRallyTrackGazeboSim.launch```
+
+Occasionally, the vehicle will spawn in without having the joints initialized. This is noted in the public AutoRally wiki [here](https://github.com/AutoRally/autorally/issues/78). The solution is to relaunch the controller spawner via:
+
+``` roslaunch autorally_gazebo autoRallyControllerSpawner.launch ```
+in a new terminal after sourcing the workspace.
+2. Open another new terminal, source the workspace, and launch the LTIMPC controller
+
+``` roslaunch autorally_control LTIMPC_Gazebo.launch ```
+3. Tweak the controller speed targets and cost functions via dynamic reconfigure
+
+```rosrun rqt_reconfigure rqt_reconfigure```
+4. Once finished, kill the LTI process and dynamic reconfigure, then launch the LTV controller
+
+```roslaunch autorally_control LTVMPC_Gazebo.launch ```
+
+
+ 
 ## What's Next
 
 More detailed explanations of the controllers and state estimator can be found on the [wiki](https://github.com/AutoRally/autorally/wiki):
