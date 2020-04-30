@@ -44,9 +44,6 @@ class LTVMPC
         double curvature;
         double controllerUpdateRate = 0.01;
 
-        double *x_out_ptr;
-        double *Q_ptr;
-        double *R_ptr;
         
         dynamic_reconfigure::Server<LTVMPC_paramsConfig> m_dynServer; 
 
@@ -84,7 +81,6 @@ class LTVMPC
             const Eigen::Matrix<double, 8, 8, Eigen::ColMajor> &eigenA, const Eigen::Matrix<double, 8, 2, 
             Eigen::ColMajor> &eigenB, const Eigen::Matrix<double, 8, 1> &eigend);
         void asyncMatrixPopulation(int k);
-        void getPointerstoEigen();
 
  	public:
      	LTVMPC(std::string prefix);

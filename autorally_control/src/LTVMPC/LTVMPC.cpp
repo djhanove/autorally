@@ -38,9 +38,8 @@ LTVMPC::LTVMPC(std::string prefix = "~") : nh(prefix)
   setup_indexing();     //Init structs for solver states from solve.c
   settings.verbose = 0; // Set this to 1 if you want to see the internal solver information
 
-  /* Initialize Q and R matrices to Zero and get pointers to the eigen matrices */
+  /* Initialize Q and R matrices to Zero */
   setMPCCost();
-  getPointerstoEigen();
 
   /* Setup dynamic reconfigure pipeline and tie to callback function */
   dynamic_reconfigure::Server<LTVMPC_paramsConfig>::CallbackType cb; // Start up dynamic reconfigure server
@@ -62,12 +61,6 @@ void LTVMPC::setMPCCost()
   m_lock.unlock();
 }
 
-void LTVMPC::getPointerstoEigen()
-{
-  x_out_ptr = x0.data();
-  Q_ptr = m_Q.data();
-  R_ptr = m_R.data();
-}
 void LTVMPC::ConfigCallback(const LTVMPC_paramsConfig &config, uint32_t level)
 {
   /* Initialize Q and R cost matrix diagonals with custom parameters defined in the LTV_params.cfg file 
@@ -119,20 +112,20 @@ void LTVMPC::LTVMPCcb()
   {
     if (i < 4)
     {
-      params.x_0[i] = *(x_out_ptr + i);
-      params.Q[i] = *(Q_ptr + i);
-      params.R[i] = *(R_ptr + i);
+      params.x_0[i] = *(x0.data() + i);
+      params.Q[i] = *(m_Q.data() + i);
+      params.R[i] = *(m_R.data() + i);
       params.QT[i] = 0.0;
     }
     else if (i < 8)
     {
-      params.x_0[i] = *(x_out_ptr + i);
-      params.Q[i] = *(Q_ptr + i);
+      params.x_0[i] = *(x0.data() + i);
+      params.Q[i] = *(m_Q.data() + i);
       params.QT[i] = 0.0;
     }
     else
     {
-      params.Q[i] = *(Q_ptr + i);
+      params.Q[i] = *(m_Q.data() + i);
       params.QT[i] = 0.0;
     }
   }
@@ -192,18 +185,18 @@ void LTVMPC::populateParameterArrays(double (&A)[64], double (&B)[16], double (&
   {
     if (i < 8)
     {
-      A[i] = *(A_ptr + i);
-      B[i] = *(B_ptr + i);
-      d[i] = *(d_ptr + i);
+      A[i] = *(eigenA.data() + i);
+      B[i] = *(eigenB.data() + i);
+      d[i] = *(eigend.data() + i);
     }
     else if (i < 16)
     {
-      A[i] = *(A_ptr + i);
-      B[i] = *(B_ptr + i);
+      A[i] = *(eigenA.data() + i);
+      B[i] = *(eigenB.data() + i);
     }
     else
     {
-      A[i] = *(A_ptr + i);
+      A[i] = *(eigenA.data() + i);
     }
   }
 }

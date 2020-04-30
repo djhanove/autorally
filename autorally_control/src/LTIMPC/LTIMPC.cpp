@@ -35,9 +35,8 @@ LTIMPC::LTIMPC(std::string prefix = "~") : nh(prefix)
   setup_indexing();     //Init structs for solver states from solve.c
   settings.verbose = 0; // Set this to 1 if you want to see the internal solver information
 
-  /* Initialize Q and R matrices to Zero and get pointers to the eigen matrices */
+  /* Initialize Q and R matrices to Zero */
   setMPCCost();
-  getPointerstoEigen();
 
   /* Setup dynamic reconfigure pipeline and tie to callback function */
   cb = boost::bind(&LTIMPC::ConfigCallback, this, _1, _2);
@@ -53,17 +52,6 @@ void LTIMPC::setMPCCost()
   m_Q = Eigen::MatrixXd::Zero(8, 8);
   m_R = Eigen::MatrixXd::Zero(2, 2);
   m_lock.unlock();
-}
-
-void LTIMPC::getPointerstoEigen()
-{
-  // Unpack Eigen matrices into flat C arrays for CVXGEN solver
-  x_out_ptr = x0.data();
-  A_ptr = Vehicle.m_A.data();
-  B_ptr = Vehicle.m_B.data();
-  d_ptr = Vehicle.m_d.data();
-  Q_ptr = m_Q.data();
-  R_ptr = m_R.data();
 }
 
 void LTIMPC::ConfigCallback(const LTIMPC_paramsConfig &config, uint32_t level)
@@ -118,34 +106,34 @@ void LTIMPC::LTIMPCcb()
   {
     if (i < 4)
     {
-      params.x_0[i] = *(x_out_ptr + i);
-      params.A[i] = *(A_ptr + i);
-      params.B[i] = *(B_ptr + i);
-      params.d[i] = *(d_ptr + i);
-      params.Q[i] = *(Q_ptr + i);
-      params.R[i] = *(R_ptr + i);
+      params.x_0[i] = *(x0.data() + i);
+      params.A[i] = *(Vehicle.m_A.data() + i);
+      params.B[i] = *(Vehicle.m_B.data() + i);
+      params.d[i] = *(Vehicle.m_d.data() + i);
+      params.Q[i] = *(m_Q.data() + i);
+      params.R[i] = *(m_R.data() + i);
       params.QT[i] = 0.0;
     }
     else if (i < 8)
     {
-      params.x_0[i] = *(x_out_ptr + i);
-      params.A[i] = *(A_ptr + i);
-      params.B[i] = *(B_ptr + i);
-      params.d[i] = *(d_ptr + i);
-      params.Q[i] = *(Q_ptr + i);
+      params.x_0[i] = *(x0.data() + i);
+      params.A[i] = *(Vehicle.m_A.data() + i);
+      params.B[i] = *(Vehicle.m_B.data() + i);
+      params.d[i] = *(Vehicle.m_d.data() + i);
+      params.Q[i] = *(m_Q.data() + i);
       params.QT[i] = 0.0;
     }
     else if (i < 16)
     {
-      params.A[i] = *(A_ptr + i);
-      params.B[i] = *(B_ptr + i);
-      params.Q[i] = *(Q_ptr + i);
+      params.A[i] = *(Vehicle.m_A.data() + i);
+      params.B[i] = *(Vehicle.m_B.data() + i);
+      params.Q[i] = *(m_Q.data() + i);
       params.QT[i] = 0.0;
     }
     else
     {
-      params.A[i] = *(A_ptr + i);
-      params.Q[i] = *(Q_ptr + i);
+      params.A[i] = *(Vehicle.m_A.data() + i);
+      params.Q[i] = *(m_Q.data() + i);
       params.QT[i] = 0.0;
     }
   }

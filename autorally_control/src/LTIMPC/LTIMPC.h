@@ -41,13 +41,6 @@ class LTIMPC
         double curvature;
         double controllerUpdateRate = 0.01;
 
-        double *x_out_ptr; 
-        double *A_ptr;
-        double *B_ptr;
-        double *d_ptr;
-        double *Q_ptr;
-        double *R_ptr;
-
         dynamic_reconfigure::Server<LTIMPC_paramsConfig> m_dynServer; 
         dynamic_reconfigure::Server<LTIMPC_paramsConfig>::CallbackType cb;
 
@@ -74,7 +67,6 @@ class LTIMPC
         void setMPCCost();
         void Solve(const autorally_msgs::mapCA &CA_states); // Solve the problem and return control command to ROS
         void ConfigCallback(const LTIMPC_paramsConfig &config, uint32_t level);
-        void getPointerstoEigen();
         //void ViewMPCTrajectory(float state_est_x, float state_est_y, float state_est_yaw);
 
  	public:
