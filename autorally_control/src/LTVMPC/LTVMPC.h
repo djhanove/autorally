@@ -83,7 +83,7 @@ class LTVMPC
         void populateParameterArrays(double (&A)[64], double (&B)[16], double (&d)[8],
             const Eigen::Matrix<double, 8, 8, Eigen::ColMajor> &eigenA, const Eigen::Matrix<double, 8, 2, 
             Eigen::ColMajor> &eigenB, const Eigen::Matrix<double, 8, 1> &eigend);
-        void multiThreadTest(int k);
+        void asyncMatrixPopulation(int k);
         void getPointerstoEigen();
 
  	public:

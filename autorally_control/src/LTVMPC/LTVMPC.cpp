@@ -111,7 +111,7 @@ void LTVMPC::LTVMPCcb()
 
   for (int k = 0; k <= m_N; ++k)
   {
-    futures.emplace_back(std::async(std::launch::async, &LTVMPC::multiThreadTest, this, k));
+    futures.emplace_back(std::async(std::launch::async, &LTVMPC::asyncMatrixPopulation, this, k));
   }
 
   //  Populate parameter arrays for CVXGEN solver
@@ -239,7 +239,7 @@ void LTVMPC::Solve(autorally_msgs::mapCA CA_states)
   }
 }
 
-void LTVMPC::multiThreadTest(int k)
+void LTVMPC::asyncMatrixPopulation(int k)
 {
   Eigen::Matrix<double, 8, 1> linP;
   for (int i = 0; i < 8; ++i)
@@ -312,9 +312,3 @@ void LTVMPC::multiThreadTest(int k)
 
 }; // namespace autorally_control
 
-int main(int argc, char **argv)
-{
-  ros::init(argc, argv, "LTVMPC");
-  autorally_control::LTVMPC path_following_LTV_MPC;
-  ros::spin();
-}

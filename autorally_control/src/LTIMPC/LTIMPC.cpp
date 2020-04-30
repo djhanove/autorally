@@ -238,9 +238,3 @@ void LTIMPC::ViewMPCTrajectory(float state_est_x, float state_est_y, float state
 
 }; // namespace autorally_control
 
-int main(int argc, char **argv)
-{
-  ros::init(argc, argv, "LTIMPC");
-  autorally_control::LTIMPC path_following_LTI_MPC;
-  ros::spin();
-}

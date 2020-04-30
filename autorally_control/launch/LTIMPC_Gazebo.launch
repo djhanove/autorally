@@ -4,5 +4,5 @@
     <param name="MAP_CA/map_flag" value="0"/>
     <param name="MAP_CA/use_pose_estimate" value="false"/>
    </node>
-   <node name="LTIMPC" pkg="autorally_control" type="LTIMPC" output="screen"/>
+   <node name="LTIMPC" pkg="autorally_control" type="LTIMPC_node" output="screen"/>
 </launch>

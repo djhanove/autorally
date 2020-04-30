@@ -5,5 +5,5 @@
     <param name="MAP_CA/use_pose_estimate" value="false"/>
    </node>
   <node name="LTVMPC" pkg="autorally_control" 
-  type="LTVMPC" output="screen"/>
+  type="LTVMPC_node" output="screen"/>
 </launch>
