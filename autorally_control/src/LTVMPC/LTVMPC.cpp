@@ -256,57 +256,63 @@ void LTVMPC::asyncMatrixPopulation(int k)
   tempd.setZero();
   Vehicle.LinearizeDynamics(linP, control, util.obtainCurvatureFromS(linP(7, 0)), tempA, tempB, tempd);
 
-  if (k == 0)
+  switch (k)
   {
-    populateParameterArrays(params.A_0, params.B_0, params.d_0, tempA, tempB, tempd);
-  }
-  else if (k == 1)
-  {
-    populateParameterArrays(params.A_1, params.B_1, params.d_1, tempA, tempB, tempd);
-  }
-  else if (k == 2)
-  {
-    populateParameterArrays(params.A_2, params.B_2, params.d_2, tempA, tempB, tempd);
-  }
-  else if (k == 3)
-  {
-    populateParameterArrays(params.A_3, params.B_3, params.d_3, tempA, tempB, tempd);
-  }
-  else if (k == 4)
-  {
-    populateParameterArrays(params.A_4, params.B_4, params.d_4, tempA, tempB, tempd);
-  }
-  else if (k == 5)
-  {
-    populateParameterArrays(params.A_5, params.B_5, params.d_5, tempA, tempB, tempd);
-  }
-  else if (k == 6)
-  {
-    populateParameterArrays(params.A_6, params.B_6, params.d_6, tempA, tempB, tempd);
-  }
-  else if (k == 7)
-  {
-    populateParameterArrays(params.A_7, params.B_7, params.d_7, tempA, tempB, tempd);
-  }
-  else if (k == 8)
-  {
-    populateParameterArrays(params.A_8, params.B_8, params.d_8, tempA, tempB, tempd);
-  }
-  else if (k == 9)
-  {
-    populateParameterArrays(params.A_9, params.B_9, params.d_9, tempA, tempB, tempd);
-  }
-  else if (k == 10)
-  {
-    populateParameterArrays(params.A_10, params.B_10, params.d_10, tempA, tempB, tempd);
-  }
-  else if (k == 11)
-  {
-    populateParameterArrays(params.A_11, params.B_11, params.d_11, tempA, tempB, tempd);
-  }
-  else
-  { // k == 12
-    populateParameterArrays(params.A_12, params.B_12, params.d_12, tempA, tempB, tempd);
+    case 0: 
+      populateParameterArrays(params.A_0, params.B_0, params.d_0, tempA, tempB, tempd);
+      break;
+    
+    case 1: 
+      populateParameterArrays(params.A_1, params.B_1, params.d_1, tempA, tempB, tempd);
+      break;
+
+    case 2: 
+      populateParameterArrays(params.A_2, params.B_2, params.d_2, tempA, tempB, tempd);
+      break;
+    
+    case 3: 
+      populateParameterArrays(params.A_3, params.B_3, params.d_3, tempA, tempB, tempd);
+      break;
+  
+    case 4: 
+      populateParameterArrays(params.A_4, params.B_4, params.d_4, tempA, tempB, tempd);
+      break;
+    
+    case 5: 
+      populateParameterArrays(params.A_5, params.B_5, params.d_5, tempA, tempB, tempd);
+      break;
+
+    case 6: 
+      populateParameterArrays(params.A_6, params.B_6, params.d_6, tempA, tempB, tempd);
+      break;
+    
+    case 7: 
+      populateParameterArrays(params.A_7, params.B_7, params.d_7, tempA, tempB, tempd);
+      break;
+  
+    case 8: 
+      populateParameterArrays(params.A_8, params.B_8, params.d_8, tempA, tempB, tempd);
+      break;
+
+    case 9: 
+      populateParameterArrays(params.A_9, params.B_9, params.d_9, tempA, tempB, tempd);
+      break;
+    
+    case 10: 
+      populateParameterArrays(params.A_10, params.B_10, params.d_10, tempA, tempB, tempd);
+      break;
+  
+    case 11: 
+      populateParameterArrays(params.A_11, params.B_11, params.d_11, tempA, tempB, tempd);
+      break;
+    
+    case 12: 
+      populateParameterArrays(params.A_12, params.B_12, params.d_12, tempA, tempB, tempd);
+      break;
+  
+  default:      
+      populateParameterArrays(params.A_0, params.B_0, params.d_0, tempA, tempB, tempd);
+      break;
   }
 }
 
