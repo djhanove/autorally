@@ -18,7 +18,7 @@ Settings settings; //struct for MPC solver settings
 
 namespace autorally_control
 {
-LTVMPC::LTVMPC() : nh("~")
+LTVMPC::LTVMPC(std::string prefix = "~") : nh(prefix)
 {
   /* Setup Pub/Subs */
   mapCASub = nh.subscribe("/MAP_CA/mapCA", 1, &LTVMPC::Solve, this);

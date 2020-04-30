@@ -78,7 +78,7 @@ class LTIMPC
         //void ViewMPCTrajectory(float state_est_x, float state_est_y, float state_est_yaw);
 
  	public:
-     	LTIMPC();
+     	LTIMPC(std::string prefix);
     	~LTIMPC(){};
 
 

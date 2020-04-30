@@ -36,7 +36,7 @@ class LTVMPC
         boost::mutex m_lock;
 
         double speedCommand = 0.0;
-        double m_dt = 0.001; 
+        const double m_dt = 0.001; 
 
         double time;
         double dt;
@@ -87,6 +87,6 @@ class LTVMPC
         void getPointerstoEigen();
 
  	public:
-     	LTVMPC();
+     	LTVMPC(std::string prefix);
 };
 }; // ns
