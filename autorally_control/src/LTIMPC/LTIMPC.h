@@ -1,27 +1,17 @@
 
 #include <ros/ros.h>
-#include <ros/time.h>
 #include <tf/transform_listener.h>
-#include <std_msgs/Float64.h>
 #include <dynamic_reconfigure/server.h>
-
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
-
-#include <nav_msgs/Odometry.h>
-
 #include <eigen3/Eigen/Dense>
-
-#include <autorally_msgs/chassisCommand.h>
-#include <autorally_msgs/runstop.h>
-#include <autorally_msgs/mapCA.h>
-
 #include <autorally_control/LTIMPC_paramsConfig.h> //point to cfg file, catkin will generate the header 
-
+#include <autorally_msgs/mapCA.h>
+#include <autorally_msgs/chassisCommand.h>
+#include <autorally_control/VehicleDynamics/VehDyn.h>
 #include <boost/thread.hpp>          // Mutex
 #include <boost/lexical_cast.hpp>
 
-#include <autorally_control/VehicleDynamics/VehDyn.h>
 
 #define _USE_MATH_DEFINES
 namespace autorally_control

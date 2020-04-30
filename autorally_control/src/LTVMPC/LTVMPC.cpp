@@ -3,12 +3,10 @@ extern "C"
 #include "solver.h"
 }
 #include "LTVMPC.h"
-#include <sstream>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <iostream>
 #include <chrono>
+#include <autorally_msgs/wheelSpeeds.h>
+#include <autorally_msgs/runstop.h>
+#include <ros/time.h>
 
 // cvxgen vectors
 Vars vars;         //cvxgen output values x and u

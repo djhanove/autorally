@@ -1,28 +1,16 @@
 
 #include <ros/ros.h>
-#include <ros/time.h>
 #include <tf/transform_listener.h>
-#include <std_msgs/Float64.h>
 #include <dynamic_reconfigure/server.h>
-
 #include <nav_msgs/Odometry.h>
-
 #include <eigen3/Eigen/Dense>
-
 #include <autorally_msgs/chassisCommand.h>
-#include <autorally_msgs/wheelSpeeds.h>
-#include <autorally_msgs/runstop.h>
 #include <autorally_msgs/mapCA.h>
-
-
 #include <autorally_control/LTVMPC_paramsConfig.h> //point to cfg file, catkin will generate the header 
-
 #include <boost/thread.hpp>          // Mutex
 #include <boost/lexical_cast.hpp>
-#include <vector>
 #include <future>
 #include <thread>
-
 #include <autorally_control/VehicleDynamics/VehDyn.h>
 #include <autorally_control/Utilities/Utilities.h>
 
