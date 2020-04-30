@@ -18,7 +18,7 @@
 #include <autorally_msgs/chassisCommand.h>
 #include <autorally_msgs/wheelSpeeds.h>
 #include <autorally_msgs/runstop.h>
-#include <autorally_private_msgs/mapCA.h>
+#include <autorally_msgs/mapCA.h>
 #include <autorally_msgs/lapStats.h>
 
 #include <boost/thread.hpp>          // Mutex
@@ -39,7 +39,7 @@ namespace autorally_control
 
 	    nav_msgs::Odometry curr_position_;
         nav_msgs::Odometry prev_position_;
-        autorally_private_msgs::mapCA CA_states_;
+        autorally_msgs::mapCA CA_states_;
         autorally_msgs::lapStats lap_stats_;
 
         tf::TransformListener tf_;

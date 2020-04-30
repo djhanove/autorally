@@ -19,7 +19,7 @@ namespace autorally_control
 			odom_sub_   = nh_.subscribe("/ground_truth/state", 1, &Map_CA::GPSCallback, this);
 			current_time = ros::Time::now();
   			last_time = ros::Time::now();
-	    map_CA_pub_ = nh_.advertise<autorally_private_msgs::mapCA>("mapCA", 1);	            
+	    map_CA_pub_ = nh_.advertise<autorally_msgs::mapCA>("mapCA", 1);	            
 		lap_stats_pub_ = nh_.advertise<autorally_msgs::lapStats>("lapStats", 1);	            
 		
 		// Marietta Track is divided into 5 regions of circular arcs and straight segments, CCRF is divided into 15 such segments

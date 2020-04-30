@@ -1,6 +1,6 @@
 <launch>
 <include file="$(find autorally_core)/launch/hardware.machine" />
-  <node name="MAP_CA" pkg="autorally_private_control" type="Map_CA" output="screen" machine="autorally-master">
+  <node name="MAP_CA" pkg="autorally_control" type="Map_CA" output="screen" machine="autorally-master">
     <param name="MAP_CA/map_flag" value="0"/>
     <param name="MAP_CA/use_pose_estimate" value="false"/>
    </node>

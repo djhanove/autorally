@@ -45,6 +45,7 @@ add_subdirectory(src/gpsWaypoint)
 add_subdirectory(src/path_integral)
 add_subdirectory(src/LTIMPC)
 add_subdirectory(src/LTVMPC)
+add_subdirectory(src/Map_CA)
 
 install(DIRECTORY launch/
    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
