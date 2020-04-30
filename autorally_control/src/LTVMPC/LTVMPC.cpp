@@ -28,8 +28,7 @@ LTVMPC::LTVMPC(std::string prefix = "~") : nh(prefix)
   /* Init first control command to zero */
   command.steering = 0.0;      // first loop needs this initialized
   command.throttle = 0.0;      // first loop needs this initialized
-  controllerUpdateRate = 0.01; // Try to achieve 100 Hz update rate
-
+  
   // setup instance of map utility with gazebo simulation parameters
   util = Utilities(0);
 

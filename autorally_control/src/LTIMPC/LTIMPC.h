@@ -34,12 +34,12 @@ class LTIMPC
         boost::mutex m_lock;
 
         double speedCommand = 0.0;
-        double m_dt = 0.001;
+        const double m_dt = 0.001;
         double time;
         double dt;
         double prevTime = 0.0;
         double curvature;
-        double controllerUpdateRate = 0.01;
+        const double controllerUpdateRate = 0.01;
 
         dynamic_reconfigure::Server<LTIMPC_paramsConfig> m_dynServer; 
         dynamic_reconfigure::Server<LTIMPC_paramsConfig>::CallbackType cb;

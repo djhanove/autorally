@@ -28,7 +28,6 @@ LTIMPC::LTIMPC(std::string prefix = "~") : nh(prefix)
   /* Init first control command to zero */
   command.steering = 0.0;      // first loop needs this initialized
   command.throttle = 0.0;      // first loop needs this initialized
-  controllerUpdateRate = 0.01; // Try to achieve 100 Hz update rate
 
   /* Setup external CVXGEN solver parameters */
   set_defaults();       //setup MPC Solver defaults from solve.c

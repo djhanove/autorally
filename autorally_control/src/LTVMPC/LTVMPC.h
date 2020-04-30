@@ -42,7 +42,7 @@ class LTVMPC
         double dt;
         double prevTime = 0.0;
         double curvature;
-        double controllerUpdateRate = 0.01;
+        const double controllerUpdateRate = 0.01;
 
         
         dynamic_reconfigure::Server<LTVMPC_paramsConfig> m_dynServer; 
