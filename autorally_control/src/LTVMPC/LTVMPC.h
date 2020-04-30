@@ -23,8 +23,8 @@
 #include <future>
 #include <thread>
 
-#include "VehDyn.h"
-#include <Utilities/Utilities.h>
+#include <autorally_control/VehicleDynamics/VehDyn.h>
+#include <autorally_control/Utilities/Utilities.h>
 
 #define _USE_MATH_DEFINES
 namespace autorally_control

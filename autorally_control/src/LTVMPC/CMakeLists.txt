@@ -4,7 +4,7 @@
 #only compile if odeint is installed (this is a workaround for now since odeint
 #does not come in a version fo boost that ROS depends on yet (need boost >= 1.53)
 
-add_library(LTVMPC_functions LTVMPC.cpp solver.c ldl.c matrix_support.c util.c VehDyn.cpp)
+add_library(LTVMPC_functions LTVMPC.cpp solver.c ldl.c matrix_support.c util.c)
 add_dependencies(LTVMPC_functions autorally_msgs_gencpp ${PROJECT_NAME}_gencfg ${catkin_EXPORTED_TARGETS})
 target_link_libraries(LTVMPC_functions ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 

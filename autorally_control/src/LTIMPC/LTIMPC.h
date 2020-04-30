@@ -21,7 +21,7 @@
 #include <boost/thread.hpp>          // Mutex
 #include <boost/lexical_cast.hpp>
 
-#include "VehDyn.h"
+#include <autorally_control/VehicleDynamics/VehDyn.h>
 
 #define _USE_MATH_DEFINES
 namespace autorally_control
